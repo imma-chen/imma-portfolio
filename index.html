@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portfolio | Film Reel Showcase</title>
+  <title>Portfolio | Interactive Film Reel</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Google Fonts for Editorial Aesthetic -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -16,19 +16,52 @@
   <style>
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: #FBF9F5; /* Warm bright off-white */
+      background-color: #FBF9F5;
       color: #2D2B2A;
     }
     .serif-title {
       font-family: 'Instrument Serif', serif;
     }
+
+    /* ----------------------------------------------------
+       鼠标交互放大 & 悬浮动画定义 (Interactive Mouse Styles)
+       ---------------------------------------------------- */
     
-    /* Film Reel Graphic Animation */
+    /* 1. 基础缩放元素：悬停时流畅放大并带有柔和阴影 */
+    .interactive-hover {
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+      will-change: transform;
+    }
+    .interactive-hover:hover {
+      transform: scale(1.04) translateY(-4px);
+      box-shadow: 0 20px 30px -10px rgba(45, 43, 42, 0.08);
+    }
+
+    /* 2. 转轴轮盘专属：悬停时膨胀放大并加深轮廓 */
+    .reel-container {
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .reel-container:hover {
+      transform: scale(1.12);
+    }
+
+    /* 3. 按钮与小部件：悬停时弹性 Pop 放大 */
+    .btn-pop {
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
+    }
+    .btn-pop:hover {
+      transform: scale(1.08);
+    }
+    .btn-pop:active {
+      transform: scale(0.95);
+    }
+
+    /* 转轴旋转平滑过渡 */
     .reel-spin {
       transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
-    /* Subtle Grain Texture overlay for retro film feel */
+    /* 纸张微弱肌理背景 */
     .bg-grain {
       background-image: radial-gradient(#2d2b2a 0.5px, transparent 0.5px);
       background-size: 24px 24px;
@@ -38,58 +71,53 @@
 </head>
 <body class="min-h-screen relative flex flex-col justify-between overflow-x-hidden">
 
-  <!-- Grain overlay for vintage touch -->
+  <!-- Grain overlay -->
   <div class="fixed inset-0 bg-grain pointer-events-none z-50"></div>
 
   <!-- Header Navigation -->
   <header class="w-full max-w-7xl mx-auto px-8 py-8 flex justify-between items-center z-10">
-    <a href="#" class="text-2xl font-semibold tracking-tight text-stone-800">YourName<span class="text-amber-700">.</span></a>
+    <a href="#" class="text-2xl font-semibold tracking-tight text-stone-800 btn-pop inline-block">
+      YourName<span class="text-amber-700">.</span>
+    </a>
     <nav class="flex items-center space-x-8 text-sm font-medium text-stone-600">
-      <a href="#about" class="hover:text-amber-800 transition">About</a>
-      <a href="#work" class="hover:text-amber-800 transition">Works</a>
-      <a href="#contact" class="hover:text-amber-800 transition">Contact</a>
+      <a href="#about" class="hover:text-amber-800 transition inline-block btn-pop">About</a>
+      <a href="#work" class="hover:text-amber-800 transition inline-block btn-pop">Works</a>
+      <a href="#contact" class="hover:text-amber-800 transition inline-block btn-pop">Contact</a>
     </nav>
   </header>
 
   <!-- Main Showcase Container -->
   <main class="w-full max-w-7xl mx-auto px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center my-auto z-10">
 
-    <!-- LEFT COLUMN: Vintage Film Reel Project Showcase (7 Cols) -->
+    <!-- LEFT COLUMN: Film Reel Section -->
     <section class="lg:col-span-7 flex flex-col items-center lg:items-start space-y-8">
       
       <!-- Category Badge -->
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100/60 border border-amber-200/80 text-amber-900 text-xs font-semibold uppercase tracking-widest">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100/60 border border-amber-200/80 text-amber-900 text-xs font-semibold uppercase tracking-widest cursor-default">
         <i data-lucide="disc" class="w-3.5 h-3.5 text-amber-700 animate-spin" style="animation-duration: 8s;"></i>
         <span>Project Reel Frame <span id="frame-num">01</span> / 03</span>
       </div>
 
-      <!-- Interactive Reel & Preview Block -->
-      <div class="w-full flex flex-col md:flex-row items-center gap-8 bg-stone-100/70 border border-stone-200/80 p-8 rounded-3xl shadow-sm backdrop-blur-sm">
+      <!-- Interactive Reel Showcase Card (鼠标停留整体卡片及内部转轴都会响应放大) -->
+      <div class="w-full flex flex-col md:flex-row items-center gap-8 bg-stone-100/80 border border-stone-200/80 p-8 rounded-3xl interactive-hover cursor-pointer group">
         
-        <!-- Rotating Film Reel Disc -->
-        <div class="relative w-56 h-56 flex-shrink-0 flex items-center justify-center">
-          <!-- The Reel SVG -->
+        <!-- Rotating Film Reel Disc (鼠标移入时轮盘突出放大) -->
+        <div class="relative w-56 h-56 flex-shrink-0 flex items-center justify-center reel-container">
           <div id="film-reel" class="w-full h-full reel-spin">
             <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-md">
-              <!-- Outer Ring -->
               <circle cx="100" cy="100" r="94" stroke="#4A4744" stroke-width="6"/>
               <circle cx="100" cy="100" r="86" stroke="#C89D66" stroke-width="2" stroke-dasharray="4 4"/>
-              
-              <!-- Film Sprocket Holes along circumference -->
               <circle cx="100" cy="100" r="76" stroke="#3A3836" stroke-width="10" stroke-dasharray="8 12"/>
-              
-              <!-- Center Hub -->
               <circle cx="100" cy="100" r="28" fill="#3A3836" stroke="#C89D66" stroke-width="3"/>
               <circle cx="100" cy="100" r="10" fill="#FBF9F5"/>
 
-              <!-- Spokes / Reels Cutouts (3 Big Circles) -->
+              <!-- Spokes -->
               <circle cx="100" cy="48" r="18" fill="#FBF9F5" stroke="#3A3836" stroke-width="3"/>
               <circle cx="145" cy="126" r="18" fill="#FBF9F5" stroke="#3A3836" stroke-width="3"/>
               <circle cx="55" cy="126" r="18" fill="#FBF9F5" stroke="#3A3836" stroke-width="3"/>
             </svg>
           </div>
           
-          <!-- Play / Rotate Indicator Marker -->
           <div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-6 bg-amber-700 rounded-b-sm shadow-sm flex items-center justify-center">
             <div class="w-1.5 h-1.5 rounded-full bg-stone-100"></div>
           </div>
@@ -97,47 +125,46 @@
 
         <!-- Dynamic Category Details -->
         <div class="space-y-4 text-center md:text-left flex-1">
-          <h2 id="category-title" class="text-3xl md:text-4xl serif-title italic text-stone-900 font-normal">
+          <h2 id="category-title" class="text-3xl md:text-4xl serif-title italic text-stone-900 font-normal transition-transform duration-300 group-hover:translate-x-1">
             Product Design
           </h2>
           <p id="category-desc" class="text-stone-600 text-sm leading-relaxed min-h-[60px]">
             Explorations in physical forms, modular furniture structures, joinery details, and material expressions.
           </p>
 
-          <!-- Explore Action Button -->
           <div class="pt-2">
-            <a id="explore-btn" href="#works" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-stone-900 text-stone-100 hover:bg-amber-800 text-sm font-medium transition shadow-md group">
+            <a id="explore-btn" href="#works" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-stone-900 text-stone-100 hover:bg-amber-800 text-sm font-medium btn-pop shadow-md">
               <span>Explore Works</span>
-              <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition"></i>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
           </div>
         </div>
       </div>
 
-      <!-- Reel Controls (Next / Prev Frame) -->
+      <!-- Controls -->
       <div class="flex items-center gap-4">
-        <button id="prev-btn" class="p-3 rounded-full border border-stone-300 hover:border-stone-800 hover:bg-stone-200/50 transition" aria-label="Previous Category">
+        <button id="prev-btn" class="p-3 rounded-full border border-stone-300 hover:border-stone-800 hover:bg-stone-200/60 btn-pop" aria-label="Previous">
           <i data-lucide="chevron-left" class="w-5 h-5 text-stone-700"></i>
         </button>
         <div class="flex gap-2">
-          <button class="dot w-2.5 h-2.5 rounded-full bg-amber-700 transition-all" onclick="setFrame(0)"></button>
-          <button class="dot w-2.5 h-2.5 rounded-full bg-stone-300 transition-all" onclick="setFrame(1)"></button>
-          <button class="dot w-2.5 h-2.5 rounded-full bg-stone-300 transition-all" onclick="setFrame(2)"></button>
+          <button class="dot w-2.5 h-2.5 rounded-full bg-amber-700 btn-pop" onclick="setFrame(0)"></button>
+          <button class="dot w-2.5 h-2.5 rounded-full bg-stone-300 btn-pop" onclick="setFrame(1)"></button>
+          <button class="dot w-2.5 h-2.5 rounded-full bg-stone-300 btn-pop" onclick="setFrame(2)"></button>
         </div>
-        <button id="next-btn" class="p-3 rounded-full border border-stone-300 hover:border-stone-800 hover:bg-stone-200/50 transition" aria-label="Next Category">
+        <button id="next-btn" class="p-3 rounded-full border border-stone-300 hover:border-stone-800 hover:bg-stone-200/60 btn-pop" aria-label="Next">
           <i data-lucide="chevron-right" class="w-5 h-5 text-stone-700"></i>
         </button>
       </div>
 
     </section>
 
-
-    <!-- RIGHT COLUMN: About Me (5 Cols) -->
-    <section id="about" class="lg:col-span-5 bg-stone-100/40 border border-stone-200/60 p-8 md:p-10 rounded-3xl space-y-6">
+    <!-- RIGHT COLUMN: About Me Card (悬停时同样有微放大和抬升效果) -->
+    <section id="about" class="lg:col-span-5 bg-stone-100/50 border border-stone-200/80 p-8 md:p-10 rounded-3xl space-y-6 interactive-hover">
       
       <!-- Profile Header -->
       <div class="flex items-center gap-5">
-        <div class="w-20 h-20 rounded-2xl overflow-hidden bg-stone-200 border border-stone-300 shadow-sm flex-shrink-0">
+        <!-- 头像悬停放大的效果 -->
+        <div class="w-20 h-20 rounded-2xl overflow-hidden bg-stone-200 border border-stone-300 shadow-sm flex-shrink-0 reel-container cursor-pointer">
           <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" alt="Profile" class="w-full h-full object-cover">
         </div>
         <div>
@@ -146,33 +173,32 @@
         </div>
       </div>
 
-      <!-- Bio Paragraphs -->
       <div class="space-y-3 text-stone-600 text-sm leading-relaxed">
         <p>
           Hello! I’m a designer passionate about combining tactile materials, thoughtful structures, and minimalist aesthetics.
         </p>
         <p>
-          My work spans across physical product concepts, freehand/digital drawing, and visual communication. I strive to create objects and visual experiences that feel balanced, functional, and enduring.
+          My work spans across physical product concepts, freehand/digital drawing, and visual communication.
         </p>
       </div>
 
-      <!-- Focus / Skills Tags -->
+      <!-- Focus / Skills Tags (标签悬停独立放大) -->
       <div class="pt-2">
         <span class="text-xs font-semibold uppercase tracking-wider text-stone-400 block mb-3">Core Expertise</span>
         <div class="flex flex-wrap gap-2 text-xs">
-          <span class="px-3 py-1 rounded-md bg-stone-200/70 text-stone-700 border border-stone-300/50">Furniture & Form</span>
-          <span class="px-3 py-1 rounded-md bg-stone-200/70 text-stone-700 border border-stone-300/50">Spatial Visualization</span>
-          <span class="px-3 py-1 rounded-md bg-stone-200/70 text-stone-700 border border-stone-300/50">Graphic & Posters</span>
-          <span class="px-3 py-1 rounded-md bg-stone-200/70 text-stone-700 border border-stone-300/50">UI / Dashboard Design</span>
+          <span class="px-3 py-1 rounded-md bg-stone-200/80 text-stone-700 border border-stone-300/60 btn-pop cursor-default">Furniture & Form</span>
+          <span class="px-3 py-1 rounded-md bg-stone-200/80 text-stone-700 border border-stone-300/60 btn-pop cursor-default">Spatial Visualization</span>
+          <span class="px-3 py-1 rounded-md bg-stone-200/80 text-stone-700 border border-stone-300/60 btn-pop cursor-default">Graphic & Posters</span>
+          <span class="px-3 py-1 rounded-md bg-stone-200/80 text-stone-700 border border-stone-300/60 btn-pop cursor-default">UI / Dashboard Design</span>
         </div>
       </div>
 
-      <!-- Action Buttons & Resume -->
+      <!-- Action Buttons -->
       <div class="pt-4 flex items-center gap-4">
-        <a href="#contact" class="flex-1 text-center py-3 px-4 bg-stone-900 text-stone-100 rounded-xl font-medium text-sm hover:bg-stone-800 transition shadow-sm">
+        <a href="#contact" class="flex-1 text-center py-3 px-4 bg-stone-900 text-stone-100 rounded-xl font-medium text-sm btn-pop shadow-sm">
           Get in Touch
         </a>
-        <a href="#" class="px-4 py-3 rounded-xl border border-stone-300 hover:bg-stone-200/50 transition text-stone-700 text-sm flex items-center gap-2">
+        <a href="#" class="px-4 py-3 rounded-xl border border-stone-300 hover:bg-stone-200/60 text-stone-700 text-sm flex items-center gap-2 btn-pop">
           <i data-lucide="file-text" class="w-4 h-4 text-stone-500"></i> Resume PDF
         </a>
       </div>
@@ -181,22 +207,19 @@
 
   </main>
 
-  <!-- Simple Footer -->
   <footer id="contact" class="w-full max-w-7xl mx-auto px-8 py-8 border-t border-stone-200/80 flex flex-col md:flex-row justify-between items-center text-xs text-stone-500 gap-4 z-10">
     <p>© 2026 Your Name. All rights reserved.</p>
     <div class="flex items-center space-x-6">
-      <a href="mailto:your.email@example.com" class="hover:text-stone-800 transition">Email</a>
-      <a href="#" class="hover:text-stone-800 transition">LinkedIn</a>
-      <a href="#" class="hover:text-stone-800 transition">Instagram</a>
-      <a href="#" class="hover:text-stone-800 transition">Behance</a>
+      <a href="mailto:your.email@example.com" class="btn-pop hover:text-stone-800">Email</a>
+      <a href="#" class="btn-pop hover:text-stone-800">LinkedIn</a>
+      <a href="#" class="btn-pop hover:text-stone-800">Instagram</a>
+      <a href="#" class="btn-pop hover:text-stone-800">Behance</a>
     </div>
   </footer>
 
-  <!-- Interactive Reel Controller Script -->
   <script>
     lucide.createIcons();
 
-    // Data for categories
     const categories = [
       {
         num: "01",
@@ -228,19 +251,15 @@
 
     function updateFrame(index) {
       currentFrame = index;
-      
-      // Calculate rotation degree (120deg per section for 3 sections)
       const rotationDegree = currentFrame * 120;
       reelEl.style.transform = `rotate(${rotationDegree}deg)`;
 
-      // Update text with smooth transition
       const data = categories[currentFrame];
       frameNumEl.textContent = data.num;
       titleEl.textContent = data.title;
       descEl.textContent = data.desc;
       exploreBtn.setAttribute('href', data.link);
 
-      // Update navigation dots
       dots.forEach((dot, i) => {
         if (i === currentFrame) {
           dot.classList.add('bg-amber-700');
