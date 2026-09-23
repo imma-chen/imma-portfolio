@@ -4,99 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portfolio | A Day at the Desk</title>
+  
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Google Fonts -->
+  
+  <!-- Google Fonts: 引入 Monolith 风格衬线体与高质感字体 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-  <style>
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      overflow-x: hidden;
-      color: #2D2B2A;
-    }
-    .serif-title {
-      font-family: 'Instrument Serif', serif;
-    }
-
-    /* 动态天空背景层，依靠 JS 动态更新 CSS Variable */
-    #sky-background {
-      background: linear-gradient(180deg, var(--sky-top, #FFB385) 0%, var(--sky-mid, #FFD1A9) 50%, var(--sky-bottom, #FFF0E5) 100%);
-      transition: background 0.1s linear;
-    }
-
-    /* 太阳与月亮轨迹样式 */
-    .celestial-body {
-      transition: transform 0.1s linear, opacity 0.3s ease;
-    }
-
-    /* 玻璃窗框与桌面剪影与透视样式 */
-    .window-frame {
-      border: 12px solid #2B2623;
-      box-shadow: inset 0 0 40px rgba(0,0,0,0.3);
-    }
-
-    /* 交互卡片玻璃拟态，随昼夜交替变暗/变亮 */
-    .glass-card {
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      transition: background 0.5s ease, border-color 0.5s ease, color 0.5s ease, transform 0.3s ease;
-    }
-    
-    /* 夜间模式下的卡片样式 */
-    .dark-mode .glass-card {
-      background: rgba(30, 28, 38, 0.75);
-      border-color: rgba(255, 255, 255, 0.12);
-      color: #F3F3F5;
-    }
-
-    .dark-mode .text-adaptive-main {
-      color: #FFFFFF !important;
-    }
-    .dark-mode .text-adaptive-sub {
-      color: #A0A0B0 !important;
-    }
-
-    /* 鼠标悬停膨胀微交互 */
-    .interactive-hover {
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
-    }
-    .interactive-hover:hover {
-      transform: translateY(-6px) scale(1.02);
-      box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.15);
-    }
-  </style>
+  <!-- 引入自定义 CSS (含 Monolith 遮罩样式与页面主题) -->
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body id="body-container" class="relative">
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Monolith Style Preloader</title>
-  <!-- 引入样式表 -->
-  <link rel="stylesheet" href="css/style.css">
-  <!-- 引入 Google 艺术字体 (Instrument Serif / Mono)，营造 Monolith 的高级感 -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
-</head>
-<body>
 
-  <!-- ==================== 加载动画遮罩层 (Monolith Style) ==================== -->
+  <!-- ==================== 1. MONOLITH 加载动画遮罩层 (全屏置顶) ==================== -->
   <div id="loader" class="monolith-loader">
-    <!-- 顶部艺术角标文本 -->
+    <!-- 顶部角标文本 -->
     <div class="loader-header">
       <span>THE MONOLITH EXPERIENCE</span>
       <span>CHAPTER I — DAWN</span>
     </div>
 
-    <!-- 中央核心：巨大的百分比数字 -->
+    <!-- 中央核心：巨型数字递增 -->
     <div class="loader-center">
       <div class="number-wrapper">
         <span id="loader-counter">00</span>
@@ -113,13 +45,8 @@
     </div>
   </div>
 
-  <!-- 3D 渲染画布（背景世界） -->
-  <canvas id="webgl-canvas"></canvas>
 
-  <script type="module" src="js/main.js"></script>
-</body>
-</html>
-  <!-- ==================== FIXED BACKGROUND (WINDOW VIEW) ==================== -->
+  <!-- ==================== 2. FIXED BACKGROUND (WINDOW VIEW) ==================== -->
   <div class="fixed inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
     
     <!-- Sky Gradient Layer -->
@@ -169,7 +96,8 @@
     </div>
   </div>
 
-  <!-- ==================== SCROLLABLE CONTENT LAYER ==================== -->
+
+  <!-- ==================== 3. SCROLLABLE CONTENT LAYER ==================== -->
   <div class="relative z-10 max-w-4xl mx-auto px-6 py-20 space-y-48">
 
     <!-- HERO SECTION: Dawn Entrance -->
@@ -311,89 +239,7 @@
 
   </div>
 
-  <!-- ==================== DYNAMIC SKY TRANSITION SCRIPT ==================== -->
-  <script>
-    lucide.createIcons();
-
-    // DOM Elements
-    const skyBg = document.getElementById('sky-background');
-    const sunMoon = document.getElementById('sun-moon');
-    const sunGlow = document.getElementById('sun-glow');
-    const timeDisplay = document.getElementById('time-display');
-    const lampLight = document.getElementById('lamp-light');
-    const bodyContainer = document.getElementById('body-container');
-
-    // 天空渐变颜色 keyframes (从日出 06:00 -> 正午 12:00 -> 夕阳 18:00 -> 夜晚 22:00)
-    function interpolateColor(color1, color2, factor) {
-      const result = color1.slice();
-      for (let i = 0; i < 3; i++) {
-        result[i] = Math.round(result[i] + factor * (color2[i] - result[i]));
-      }
-      return `rgb(${result[0]}, ${result[1]}, ${result[2]})`;
-    }
-
-    // Keyframes定义 [R, G, B]
-    const skyPhases = [
-      // 0. Dawn (日出 06:00)
-      { top: [255, 179, 133], mid: [255, 209, 169], bottom: [255, 240, 229] },
-      // 1. Midday (正午 12:00)
-      { top: [120, 180, 240], mid: [180, 220, 255], bottom: [230, 245, 255] },
-      // 2. Sunset (夕阳 18:00)
-      { top: [180, 70, 100], mid: [240, 130, 90], bottom: [255, 200, 120] },
-      // 3. Night (夜幕 22:00)
-      { top: [12, 15, 28], mid: [22, 28, 48], bottom: [38, 42, 68] }
-    ];
-
-    window.addEventListener('scroll', () => {
-      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const scrollTop = window.scrollY;
-      // progress 从 0.0 过渡到 1.0
-      const progress = Math.min(Math.max(scrollTop / scrollHeight, 0), 1);
-
-      // 计算处于哪个阶段
-      const totalPhases = skyPhases.length - 1;
-      const rawPhase = progress * totalPhases;
-      const phaseIndex = Math.floor(rawPhase);
-      const factor = rawPhase - phaseIndex;
-
-      const p1 = skyPhases[phaseIndex];
-      const p2 = skyPhases[Math.min(phaseIndex + 1, totalPhases)];
-
-      // 差值计算天空三种颜色
-      const topColor = interpolateColor(p1.top, p2.top, factor);
-      const midColor = interpolateColor(p1.mid, p2.mid, factor);
-      const bottomColor = interpolateColor(p1.bottom, p2.bottom, factor);
-
-      // 更新天空背景
-      skyBg.style.background = `linear-gradient(180deg, ${topColor} 0%, ${midColor} 50%, ${bottomColor} 100%)`;
-
-      // 太阳/月亮下沉与位置计算
-      const translateY = progress * 320; // 太阳往下落
-      sunMoon.style.transform = `translateY(${translateY}px)`;
-
-      // 时间文字更新与台灯点亮控制
-      if (progress < 0.25) {
-        timeDisplay.textContent = "07:00 AM (DAWN)";
-        sunGlow.style.backgroundColor = "rgba(254, 215, 170, 0.9)";
-        lampLight.style.backgroundColor = "rgba(253, 230, 138, 0)";
-        bodyContainer.classList.remove('dark-mode');
-      } else if (progress < 0.55) {
-        timeDisplay.textContent = "12:00 PM (MIDDAY)";
-        sunGlow.style.backgroundColor = "rgba(255, 255, 255, 1)";
-        lampLight.style.backgroundColor = "rgba(253, 230, 138, 0)";
-        bodyContainer.classList.remove('dark-mode');
-      } else if (progress < 0.8) {
-        timeDisplay.textContent = "06:30 PM (SUNSET)";
-        sunGlow.style.backgroundColor = "rgba(249, 115, 22, 0.9)";
-        lampLight.style.backgroundColor = "rgba(253, 230, 138, 0.2)";
-        bodyContainer.classList.remove('dark-mode');
-      } else {
-        timeDisplay.textContent = "10:00 PM (NIGHT)";
-        sunGlow.style.backgroundColor = "rgba(224, 231, 255, 0.7)"; // 变身为淡蓝色月光
-        lampLight.style.backgroundColor = "rgba(253, 230, 138, 0.6)"; // 自动点亮台灯！
-        bodyContainer.classList.add('dark-mode');
-      }
-    });
-  </script>
+  <!-- 引入自定义 JS (控制页面滚动昼夜交替 + Loading 数字逻辑) -->
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
