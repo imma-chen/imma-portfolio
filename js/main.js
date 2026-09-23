@@ -1,68 +1,140 @@
 // js/main.js
-import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-import { GLTFLoader } from 'https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
 
-// 1. 获取 HTML 里的加载元素
+// ==================== 1. 初始化 LUCIDE 图标 ====================
+if (window.lucide) {
+  window.lucide.createIcons();
+}
+
+// ==================== 2. MONOLITH 加载动画逻辑 ====================
 const loaderElement = document.getElementById('loader');
 const counterElement = document.getElementById('loader-counter');
 const progressBarFill = document.getElementById('progress-bar-fill');
 
-let targetProgress = 0;  // 实际模型下载的进度
-let currentProgress = 0; // 画面上显示的平滑进度
+let targetProgress = 0;   // 目标进度
+let currentProgress = 0;  // 实际平滑显示的进度
 
-// 2. 创建 Three.js 加载管理器（监工）
-const manager = new THREE.LoadingManager();
+// 页面加载开始时锁定滚动
+document.body.style.overflow = 'hidden';
 
-// 当 3D 资源正在下载时触发
-manager.onProgress = function (url, itemsLoaded, itemsTotal) {
-  // 计算出真实的百分比 (0 到 100)
-  targetProgress = Math.round((itemsLoaded / itemsTotal) * 100);
-};
-
-// 当所有 3D 资源下载完毕时触发
-manager.onLoad = function () {
-  targetProgress = 100;
-};
-
-// 3. 数字平滑动画函数（让数字 01, 02... 丝滑递增，而不是蹦跳）
+// 平滑数字递增与幕布淡出循环
 function updateLoader() {
   if (currentProgress < targetProgress) {
-    currentProgress += 1; // 每次递增 1
+    currentProgress += 1;
     
-    // 把数字格式化为两位数 (比如把 5 变成 '05')
+    // 保持 00, 01, ..., 99 两位数格式
     const formattedNumber = currentProgress < 10 ? `0${currentProgress}` : currentProgress;
-    counterElement.textContent = formattedNumber;
-    
-    // 更新进度条的宽度
-    progressBarFill.style.width = `${currentProgress}%`;
+    if (counterElement) counterElement.textContent = formattedNumber;
+    if (progressBarFill) progressBarFill.style.width = `${currentProgress}%`;
   }
 
-  // 当显示数字真正到达 100% 时，触发离场幕布效果
+  // 到达 100% 后平滑淡出并解封页面滚动
   if (currentProgress >= 100) {
     setTimeout(() => {
-      // 加上 .loaded 类，触发 CSS 里的 scale 放大 + opacity 透明离场动画
-      loaderElement.classList.add('loaded');
-      
-      // 恢复网页滚动能力
-      document.body.style.overflow = 'auto';
-    }, 300); // 稍微停顿 0.3 秒增强仪式感
+      if (loaderElement) {
+        loaderElement.classList.add('loaded');
+      }
+      document.body.style.overflow = 'auto'; // 恢复页面滚动
+    }, 300);
   } else {
-    // 还没到 100%，下一帧继续更新
     requestAnimationFrame(updateLoader);
   }
 }
 
-// 启动平滑数字循环
+// 启动动画渲染帧
 updateLoader();
 
-// 4. 导入你的 3D 模型测试 (如果没有模型，可先用模拟器测试)
-const loader = new GLTFLoader(manager);
-// loader.load('assets/models/desk_scene.glb', (gltf) => { ... });
+// 模拟页面资源/3D场景装载过程 (50毫秒递增5%)
+let simulatedProgress = 0;
+const fakeLoaderTimer = setInterval(() => {
+  simulatedProgress += 5;
+  targetProgress = simulatedProgress;
+  
+  if (simulatedProgress >= 100) {
+    clearInterval(fakeLoaderTimer);
+  }
+}, 50);
 
-// 💡 模拟测试：假设没有真实模型时，用代码模拟 3 秒下载过程
-let simulatedLoad = 0;
-const fakeTimer = setInterval(() => {
-  simulatedLoad += 10;
-  targetProgress = simulatedLoad;
-  if (simulatedLoad >= 100) clearInterval(fakeTimer);
-}, 200);
+
+// ==================== 3. 页面滚动与昼夜交替控制 ====================
+const skyBg = document.getElementById('sky-background');
+const sunMoon = document.getElementById('sun-moon');
+const sunGlow = document.getElementById('sun-glow');
+const timeDisplay = document.getElementById('time-display');
+const lampLight = document.getElementById('lamp-light');
+const bodyContainer = document.getElementById('body-container');
+
+// RGB 颜色插值算法（实现天空色彩丝滑过渡）
+function interpolateColor(color1, color2, factor) {
+  const result = color1.slice();
+  for (let i = 0; i < 3; i++) {
+    result[i] = Math.round(result[i] + factor * (color2[i] - result[i]));
+  }
+  return `rgb(${result[0]}, ${result[1]}, ${result[2]})`;
+}
+
+// 天空不同时段的三色渐变定义 [Top, Mid, Bottom]
+const skyPhases = [
+  { top: [255, 179, 133], mid: [255, 209, 169], bottom: [255, 240, 229] }, // 01. Dawn (晨曦)
+  { top: [120, 180, 240], mid: [180, 220, 255], bottom: [230, 245, 255] }, // 02. Midday (正午)
+  { top: [180, 70, 100],  mid: [240, 130, 90],  bottom: [255, 200, 120] }, // 03. Sunset (黄昏)
+  { top: [12, 15, 28],    mid: [22, 28, 48],    bottom: [38, 42, 68] }     // 04. Night (黑夜)
+];
+
+// 监听滚动事件
+window.addEventListener('scroll', () => {
+  if (!skyBg) return;
+
+  const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const scrollTop = window.scrollY;
+  const progress = Math.min(Math.max(scrollTop / scrollHeight, 0), 1);
+
+  // 计算当前处于哪两个天空时段之间
+  const totalPhases = skyPhases.length - 1;
+  const rawPhase = progress * totalPhases;
+  const phaseIndex = Math.floor(rawPhase);
+  const factor = rawPhase - phaseIndex;
+
+  const p1 = skyPhases[phaseIndex];
+  const p2 = skyPhases[Math.min(phaseIndex + 1, totalPhases)];
+
+  // 动态插值计算 RGB
+  const topColor = interpolateColor(p1.top, p2.top, factor);
+  const midColor = interpolateColor(p1.mid, p2.mid, factor);
+  const bottomColor = interpolateColor(p1.bottom, p2.bottom, factor);
+
+  // 更新天空背景渐变
+  skyBg.style.background = `linear-gradient(180deg, ${topColor} 0%, ${midColor} 50%, ${bottomColor} 100%)`;
+
+  // 太阳/月亮下沉动画
+  if (sunMoon) {
+    const translateY = progress * 320;
+    sunMoon.style.transform = `translateY(${translateY}px)`;
+  }
+
+  // 状态与UI微调 (根据滚动进度分段控制)
+  if (progress < 0.25) {
+    // 晨曦
+    if (timeDisplay) timeDisplay.textContent = "07:00 AM (DAWN)";
+    if (sunGlow) sunGlow.style.backgroundColor = "rgba(254, 215, 170, 0.9)";
+    if (lampLight) lampLight.style.backgroundColor = "rgba(253, 230, 138, 0)";
+    if (bodyContainer) bodyContainer.classList.remove('dark-mode');
+  } else if (progress < 0.55) {
+    // 正午
+    if (timeDisplay) timeDisplay.textContent = "12:00 PM (MIDDAY)";
+    if (sunGlow) sunGlow.style.backgroundColor = "rgba(255, 255, 255, 1)";
+    if (lampLight) lampLight.style.backgroundColor = "rgba(253, 230, 138, 0)";
+    if (bodyContainer) bodyContainer.classList.remove('dark-mode');
+  } else if (progress < 0.8) {
+    // 黄昏
+    if (timeDisplay) timeDisplay.textContent = "06:30 PM (SUNSET)";
+    if (sunGlow) sunGlow.style.backgroundColor = "rgba(249, 115, 22, 0.9)";
+    if (lampLight) lampLight.style.backgroundColor = "rgba(253, 230, 138, 0.2)";
+    if (bodyContainer) bodyContainer.classList.remove('dark-mode');
+  } else {
+    // 黑夜
+    if (timeDisplay) timeDisplay.textContent = "10:00 PM (NIGHT)";
+    if (sunGlow) sunGlow.style.backgroundColor = "rgba(224, 231, 255, 0.7)";
+    if (lampLight) lampLight.style.backgroundColor = "rgba(253, 230, 138, 0.6)";
+    if (bodyContainer) bodyContainer.classList.add('dark-mode');
+  }
+});
