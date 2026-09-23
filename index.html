@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portfolio | Interactive Film Reel</title>
+  <title>Portfolio | A Day at the Desk</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
@@ -16,273 +16,339 @@
   <style>
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: #FBF9F5;
+      overflow-x: hidden;
       color: #2D2B2A;
     }
     .serif-title {
       font-family: 'Instrument Serif', serif;
     }
 
-    /* ----------------------------------------------------
-       鼠标交互放大 & 悬浮动画定义 (Interactive Mouse Styles)
-       ---------------------------------------------------- */
+    /* 动态天空背景层，依靠 JS 动态更新 CSS Variable */
+    #sky-background {
+      background: linear-gradient(180deg, var(--sky-top, #FFB385) 0%, var(--sky-mid, #FFD1A9) 50%, var(--sky-bottom, #FFF0E5) 100%);
+      transition: background 0.1s linear;
+    }
+
+    /* 太阳与月亮轨迹样式 */
+    .celestial-body {
+      transition: transform 0.1s linear, opacity 0.3s ease;
+    }
+
+    /* 玻璃窗框与桌面剪影与透视样式 */
+    .window-frame {
+      border: 12px solid #2B2623;
+      box-shadow: inset 0 0 40px rgba(0,0,0,0.3);
+    }
+
+    /* 交互卡片玻璃拟态，随昼夜交替变暗/变亮 */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      transition: background 0.5s ease, border-color 0.5s ease, color 0.5s ease, transform 0.3s ease;
+    }
     
-    /* 1. 基础缩放元素：悬停时流畅放大并带有柔和阴影 */
+    /* 夜间模式下的卡片样式 */
+    .dark-mode .glass-card {
+      background: rgba(30, 28, 38, 0.75);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: #F3F3F5;
+    }
+
+    .dark-mode .text-adaptive-main {
+      color: #FFFFFF !important;
+    }
+    .dark-mode .text-adaptive-sub {
+      color: #A0A0B0 !important;
+    }
+
+    /* 鼠标悬停膨胀微交互 */
     .interactive-hover {
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
-      will-change: transform;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
     }
     .interactive-hover:hover {
-      transform: scale(1.04) translateY(-4px);
-      box-shadow: 0 20px 30px -10px rgba(45, 43, 42, 0.08);
-    }
-
-    /* 2. 转轴轮盘专属：悬停时膨胀放大并加深轮廓 */
-    .reel-container {
-      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    .reel-container:hover {
-      transform: scale(1.12);
-    }
-
-    /* 3. 按钮与小部件：悬停时弹性 Pop 放大 */
-    .btn-pop {
-      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
-    }
-    .btn-pop:hover {
-      transform: scale(1.08);
-    }
-    .btn-pop:active {
-      transform: scale(0.95);
-    }
-
-    /* 转轴旋转平滑过渡 */
-    .reel-spin {
-      transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    
-    /* 纸张微弱肌理背景 */
-    .bg-grain {
-      background-image: radial-gradient(#2d2b2a 0.5px, transparent 0.5px);
-      background-size: 24px 24px;
-      opacity: 0.03;
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.15);
     }
   </style>
 </head>
-<body class="min-h-screen relative flex flex-col justify-between overflow-x-hidden">
+<body id="body-container" class="relative">
 
-  <!-- Grain overlay -->
-  <div class="fixed inset-0 bg-grain pointer-events-none z-50"></div>
+  <!-- ==================== FIXED BACKGROUND (WINDOW VIEW) ==================== -->
+  <div class="fixed inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
+    
+    <!-- Sky Gradient Layer -->
+    <div id="sky-background" class="absolute inset-0 w-full h-full"></div>
 
-  <!-- Header Navigation -->
-  <header class="w-full max-w-7xl mx-auto px-8 py-8 flex justify-between items-center z-10">
-    <a href="#" class="text-2xl font-semibold tracking-tight text-stone-800 btn-pop inline-block">
-      YourName<span class="text-amber-700">.</span>
-    </a>
-    <nav class="flex items-center space-x-8 text-sm font-medium text-stone-600">
-      <a href="#about" class="hover:text-amber-800 transition inline-block btn-pop">About</a>
-      <a href="#work" class="hover:text-amber-800 transition inline-block btn-pop">Works</a>
-      <a href="#contact" class="hover:text-amber-800 transition inline-block btn-pop">Contact</a>
-    </nav>
-  </header>
-
-  <!-- Main Showcase Container -->
-  <main class="w-full max-w-7xl mx-auto px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center my-auto z-10">
-
-    <!-- LEFT COLUMN: Film Reel Section -->
-    <section class="lg:col-span-7 flex flex-col items-center lg:items-start space-y-8">
-      
-      <!-- Category Badge -->
-      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100/60 border border-amber-200/80 text-amber-900 text-xs font-semibold uppercase tracking-widest cursor-default">
-        <i data-lucide="disc" class="w-3.5 h-3.5 text-amber-700 animate-spin" style="animation-duration: 8s;"></i>
-        <span>Project Reel Frame <span id="frame-num">01</span> / 03</span>
-      </div>
-
-      <!-- Interactive Reel Showcase Card (鼠标停留整体卡片及内部转轴都会响应放大) -->
-      <div class="w-full flex flex-col md:flex-row items-center gap-8 bg-stone-100/80 border border-stone-200/80 p-8 rounded-3xl interactive-hover cursor-pointer group">
-        
-        <!-- Rotating Film Reel Disc (鼠标移入时轮盘突出放大) -->
-        <div class="relative w-56 h-56 flex-shrink-0 flex items-center justify-center reel-container">
-          <div id="film-reel" class="w-full h-full reel-spin">
-            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-md">
-              <circle cx="100" cy="100" r="94" stroke="#4A4744" stroke-width="6"/>
-              <circle cx="100" cy="100" r="86" stroke="#C89D66" stroke-width="2" stroke-dasharray="4 4"/>
-              <circle cx="100" cy="100" r="76" stroke="#3A3836" stroke-width="10" stroke-dasharray="8 12"/>
-              <circle cx="100" cy="100" r="28" fill="#3A3836" stroke="#C89D66" stroke-width="3"/>
-              <circle cx="100" cy="100" r="10" fill="#FBF9F5"/>
-
-              <!-- Spokes -->
-              <circle cx="100" cy="48" r="18" fill="#FBF9F5" stroke="#3A3836" stroke-width="3"/>
-              <circle cx="145" cy="126" r="18" fill="#FBF9F5" stroke="#3A3836" stroke-width="3"/>
-              <circle cx="55" cy="126" r="18" fill="#FBF9F5" stroke="#3A3836" stroke-width="3"/>
-            </svg>
-          </div>
-          
-          <div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-6 bg-amber-700 rounded-b-sm shadow-sm flex items-center justify-center">
-            <div class="w-1.5 h-1.5 rounded-full bg-stone-100"></div>
-          </div>
-        </div>
-
-        <!-- Dynamic Category Details -->
-        <div class="space-y-4 text-center md:text-left flex-1">
-          <h2 id="category-title" class="text-3xl md:text-4xl serif-title italic text-stone-900 font-normal transition-transform duration-300 group-hover:translate-x-1">
-            Product Design
-          </h2>
-          <p id="category-desc" class="text-stone-600 text-sm leading-relaxed min-h-[60px]">
-            Explorations in physical forms, modular furniture structures, joinery details, and material expressions.
-          </p>
-
-          <div class="pt-2">
-            <a id="explore-btn" href="#works" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-stone-900 text-stone-100 hover:bg-amber-800 text-sm font-medium btn-pop shadow-md">
-              <span>Explore Works</span>
-              <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Controls -->
-      <div class="flex items-center gap-4">
-        <button id="prev-btn" class="p-3 rounded-full border border-stone-300 hover:border-stone-800 hover:bg-stone-200/60 btn-pop" aria-label="Previous">
-          <i data-lucide="chevron-left" class="w-5 h-5 text-stone-700"></i>
-        </button>
-        <div class="flex gap-2">
-          <button class="dot w-2.5 h-2.5 rounded-full bg-amber-700 btn-pop" onclick="setFrame(0)"></button>
-          <button class="dot w-2.5 h-2.5 rounded-full bg-stone-300 btn-pop" onclick="setFrame(1)"></button>
-          <button class="dot w-2.5 h-2.5 rounded-full bg-stone-300 btn-pop" onclick="setFrame(2)"></button>
-        </div>
-        <button id="next-btn" class="p-3 rounded-full border border-stone-300 hover:border-stone-800 hover:bg-stone-200/60 btn-pop" aria-label="Next">
-          <i data-lucide="chevron-right" class="w-5 h-5 text-stone-700"></i>
-        </button>
-      </div>
-
-    </section>
-
-    <!-- RIGHT COLUMN: About Me Card (悬停时同样有微放大和抬升效果) -->
-    <section id="about" class="lg:col-span-5 bg-stone-100/50 border border-stone-200/80 p-8 md:p-10 rounded-3xl space-y-6 interactive-hover">
-      
-      <!-- Profile Header -->
-      <div class="flex items-center gap-5">
-        <!-- 头像悬停放大的效果 -->
-        <div class="w-20 h-20 rounded-2xl overflow-hidden bg-stone-200 border border-stone-300 shadow-sm flex-shrink-0 reel-container cursor-pointer">
-          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" alt="Profile" class="w-full h-full object-cover">
-        </div>
-        <div>
-          <h1 class="text-2xl font-bold text-stone-900 tracking-tight">Your Name</h1>
-          <p class="text-xs font-semibold uppercase tracking-wider text-amber-800 mt-0.5">Multi-Disciplinary Designer</p>
-        </div>
-      </div>
-
-      <div class="space-y-3 text-stone-600 text-sm leading-relaxed">
-        <p>
-          Hello! I’m a designer passionate about combining tactile materials, thoughtful structures, and minimalist aesthetics.
-        </p>
-        <p>
-          My work spans across physical product concepts, freehand/digital drawing, and visual communication.
-        </p>
-      </div>
-
-      <!-- Focus / Skills Tags (标签悬停独立放大) -->
-      <div class="pt-2">
-        <span class="text-xs font-semibold uppercase tracking-wider text-stone-400 block mb-3">Core Expertise</span>
-        <div class="flex flex-wrap gap-2 text-xs">
-          <span class="px-3 py-1 rounded-md bg-stone-200/80 text-stone-700 border border-stone-300/60 btn-pop cursor-default">Furniture & Form</span>
-          <span class="px-3 py-1 rounded-md bg-stone-200/80 text-stone-700 border border-stone-300/60 btn-pop cursor-default">Spatial Visualization</span>
-          <span class="px-3 py-1 rounded-md bg-stone-200/80 text-stone-700 border border-stone-300/60 btn-pop cursor-default">Graphic & Posters</span>
-          <span class="px-3 py-1 rounded-md bg-stone-200/80 text-stone-700 border border-stone-300/60 btn-pop cursor-default">UI / Dashboard Design</span>
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="pt-4 flex items-center gap-4">
-        <a href="#contact" class="flex-1 text-center py-3 px-4 bg-stone-900 text-stone-100 rounded-xl font-medium text-sm btn-pop shadow-sm">
-          Get in Touch
-        </a>
-        <a href="#" class="px-4 py-3 rounded-xl border border-stone-300 hover:bg-stone-200/60 text-stone-700 text-sm flex items-center gap-2 btn-pop">
-          <i data-lucide="file-text" class="w-4 h-4 text-stone-500"></i> Resume PDF
-        </a>
-      </div>
-
-    </section>
-
-  </main>
-
-  <footer id="contact" class="w-full max-w-7xl mx-auto px-8 py-8 border-t border-stone-200/80 flex flex-col md:flex-row justify-between items-center text-xs text-stone-500 gap-4 z-10">
-    <p>© 2026 Your Name. All rights reserved.</p>
-    <div class="flex items-center space-x-6">
-      <a href="mailto:your.email@example.com" class="btn-pop hover:text-stone-800">Email</a>
-      <a href="#" class="btn-pop hover:text-stone-800">LinkedIn</a>
-      <a href="#" class="btn-pop hover:text-stone-800">Instagram</a>
-      <a href="#" class="btn-pop hover:text-stone-800">Behance</a>
+    <!-- Celestial Body (Sun & Moon) -->
+    <div id="sun-moon" class="celestial-body absolute left-1/2 top-1/2 -ml-16 -mt-16 w-32 h-32 rounded-full shadow-2xl flex items-center justify-center">
+      <div id="sun-glow" class="w-full h-full rounded-full bg-amber-200/90 blur-md"></div>
     </div>
-  </footer>
 
+    <!-- Distant Mountains / Horizon Silhouette -->
+    <svg class="absolute bottom-28 w-full h-48 text-stone-900/15 fill-current" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <path d="M0,192L60,181.3C120,171,240,149,360,165.3C480,181,600,235,720,229.3C840,224,960,160,1080,138.7C1200,117,1320,139,1380,149.3L1440,160L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path>
+    </svg>
+
+    <!-- Window Structure & Desk Foreground -->
+    <div class="absolute inset-0 flex flex-col justify-between">
+      
+      <!-- Top Window Frame & Header Navigation Overlay -->
+      <div class="w-full h-12 bg-stone-900/90 border-b-4 border-stone-950 flex items-center justify-between px-8 text-stone-300 text-xs tracking-widest font-mono">
+        <span>WINDOW VIEW — AT THE DESK</span>
+        <span id="time-display">06:00 AM (DAWN)</span>
+      </div>
+
+      <!-- Desk Surface at Bottom -->
+      <div class="w-full h-36 bg-gradient-to-b from-stone-900 via-stone-950 to-black border-t-8 border-stone-800 relative flex items-end justify-between px-12 pb-4 shadow-2xl">
+        
+        <!-- Desk Props Silhouette: Lamp & Coffee Mug -->
+        <div class="flex items-end gap-8">
+          <!-- Desk Lamp Silhouette with Light Glow -->
+          <div class="relative flex flex-col items-center">
+            <div id="lamp-light" class="absolute -top-16 -left-12 w-40 h-40 bg-amber-200/0 rounded-full blur-2xl transition-all duration-700 pointer-events-none"></div>
+            <div class="w-3 h-24 bg-stone-800 rounded-t-sm"></div>
+            <div class="w-12 h-6 bg-stone-800 rounded-t-full"></div>
+          </div>
+          <!-- Coffee Mug -->
+          <div class="w-8 h-10 bg-stone-800/90 rounded-b-md relative border-t-2 border-stone-700">
+            <div class="absolute -right-3 top-2 w-3 h-5 border-2 border-stone-800 rounded-r-md"></div>
+          </div>
+        </div>
+
+        <!-- Time Indicator Badge -->
+        <div class="text-stone-500 text-xs font-mono">
+          Scroll Down to Advance Time ↓
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SCROLLABLE CONTENT LAYER ==================== -->
+  <div class="relative z-10 max-w-4xl mx-auto px-6 py-20 space-y-48">
+
+    <!-- HERO SECTION: Dawn Entrance -->
+    <section class="min-h-[70vh] flex flex-col justify-center items-center text-center space-y-6 pt-12">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-stone-900/80 text-stone-200 text-xs font-medium backdrop-blur">
+        <i data-lucide="sun" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span>Welcome to My Workspace</span>
+      </div>
+      <h1 class="text-5xl md:text-7xl serif-title italic text-stone-900 text-adaptive-main font-normal tracking-tight">
+        A Day in the Life of a Designer
+      </h1>
+      <p class="max-w-lg text-stone-700 text-adaptive-sub text-base leading-relaxed">
+        As the sun moves across the window, explore my thoughts, products, visual arts, and design journey.
+      </p>
+    </section>
+
+    <!-- SECTION 1: ABOUT ME (Morning / 09:00 AM) -->
+    <section id="about" class="glass-card p-8 md:p-12 rounded-3xl interactive-hover shadow-xl space-y-6">
+      <div class="flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-amber-700">
+        <i data-lucide="compass" class="w-4 h-4"></i>
+        <span>01 / About Me</span>
+      </div>
+      <div class="grid md:grid-cols-12 gap-8 items-center">
+        <div class="md:col-span-8 space-y-4">
+          <h2 class="text-3xl md:text-4xl serif-title italic text-adaptive-main">
+            Passionate about forms, structures & storytelling.
+          </h2>
+          <p class="text-sm text-adaptive-sub leading-relaxed">
+            I am a multi-disciplinary designer focused on creating tangible objects, digital interfaces, and spatial visual experiences. I believe good design feels as natural as the passing of time.
+          </p>
+          <div class="pt-2 flex gap-3 text-xs">
+            <span class="px-3 py-1 rounded-full bg-stone-200/60 dark:bg-stone-800 border border-stone-300/60 dark:border-stone-700">Industrial Design</span>
+            <span class="px-3 py-1 rounded-full bg-stone-200/60 dark:bg-stone-800 border border-stone-300/60 dark:border-stone-700">UI/UX & Graphics</span>
+            <span class="px-3 py-1 rounded-full bg-stone-200/60 dark:bg-stone-800 border border-stone-300/60 dark:border-stone-700">Spatial Visualization</span>
+          </div>
+        </div>
+        <div class="md:col-span-4 aspect-square rounded-2xl overflow-hidden border border-stone-300/50 shadow-inner">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80" alt="Avatar" class="w-full h-full object-cover">
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: PRODUCT DESIGN (Midday / 12:00 PM) -->
+    <section id="product-design" class="glass-card p-8 md:p-12 rounded-3xl interactive-hover shadow-xl space-y-8">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-amber-700">
+          <i data-lucide="box" class="w-4 h-4"></i>
+          <span>02 / Product Design</span>
+        </div>
+        <span class="text-xs text-adaptive-sub font-mono">12:00 PM (Midday Sun)</span>
+      </div>
+
+      <div class="space-y-3">
+        <h2 class="text-3xl md:text-4xl serif-title italic text-adaptive-main">Modular Furniture & Tactile Objects</h2>
+        <p class="text-sm text-adaptive-sub leading-relaxed">
+          Exploring physical form, U-shaped joinery, cylindrical modules, and woven blue-gray fabric textures.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="rounded-2xl overflow-hidden border border-stone-300/40 bg-stone-100/50 space-y-3 p-4">
+          <div class="h-48 rounded-xl overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover">
+          </div>
+          <h3 class="font-bold text-base text-adaptive-main">Modular Commercial Seating</h3>
+          <p class="text-xs text-adaptive-sub">Seamless module joinery with dark gray-blue woven fabric textures.</p>
+        </div>
+
+        <div class="rounded-2xl overflow-hidden border border-stone-300/40 bg-stone-100/50 space-y-3 p-4">
+          <div class="h-48 rounded-xl overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover">
+          </div>
+          <h3 class="font-bold text-base text-adaptive-main">Joinery & Assembly Exploration</h3>
+          <p class="text-xs text-adaptive-sub">Resolving complexity in repairability and structural adaptability.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: GRAPHIC DESIGN (Golden Hour / 05:00 PM) -->
+    <section id="graphic-design" class="glass-card p-8 md:p-12 rounded-3xl interactive-hover shadow-xl space-y-8">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-amber-600">
+          <i data-lucide="layout" class="w-4 h-4"></i>
+          <span>03 / Graphic Design</span>
+        </div>
+        <span class="text-xs text-adaptive-sub font-mono">05:00 PM (Sunset Glow)</span>
+      </div>
+
+      <div class="space-y-3">
+        <h2 class="text-3xl md:text-4xl serif-title italic text-adaptive-main">Posters, Collages & Dashboards</h2>
+        <p class="text-sm text-adaptive-sub leading-relaxed">
+          From warm brown-toned Instagram collage posters to clean mobile team productivity dashboards.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="aspect-video rounded-xl overflow-hidden border border-stone-300/40">
+          <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=600&q=80" class="w-full h-full object-cover">
+        </div>
+        <div class="aspect-video rounded-xl overflow-hidden border border-stone-300/40">
+          <img src="https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=600&q=80" class="w-full h-full object-cover">
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: VISUAL ART (Dusk & Night / 08:00 PM) -->
+    <section id="visual-art" class="glass-card p-8 md:p-12 rounded-3xl interactive-hover shadow-xl space-y-8">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-indigo-400">
+          <i data-lucide="image" class="w-4 h-4"></i>
+          <span>04 / Visual Art & Renders</span>
+        </div>
+        <span class="text-xs text-adaptive-sub font-mono">08:00 PM (Nightfall)</span>
+      </div>
+
+      <div class="space-y-3">
+        <h2 class="text-3xl md:text-4xl serif-title italic text-adaptive-main">Spatial Lighting & Minimal Interiors</h2>
+        <p class="text-sm text-adaptive-sub leading-relaxed">
+          Minimalist hotel lounges in elegant blue-gray tones, focusing on lighting, atmosphere, and material rendering.
+        </p>
+      </div>
+
+      <div class="aspect-video rounded-2xl overflow-hidden border border-stone-300/40">
+        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80" class="w-full h-full object-cover">
+      </div>
+    </section>
+
+    <!-- FOOTER / CONTACT -->
+    <footer class="text-center py-12 space-y-4 text-adaptive-sub">
+      <h3 class="text-2xl font-bold text-adaptive-main">Let's Connect</h3>
+      <p class="text-sm max-w-sm mx-auto">Open for collaborations and inquiries. The lamp is always on.</p>
+      <div class="flex justify-center gap-6 pt-2 text-sm font-medium">
+        <a href="mailto:your.email@example.com" class="hover:underline">Email</a>
+        <a href="#" class="hover:underline">LinkedIn</a>
+        <a href="#" class="hover:underline">Instagram</a>
+      </div>
+      <p class="text-xs text-stone-500 pt-8">© 2026 Your Name. Designed by the Desk Window.</p>
+    </footer>
+
+  </div>
+
+  <!-- ==================== DYNAMIC SKY TRANSITION SCRIPT ==================== -->
   <script>
     lucide.createIcons();
 
-    const categories = [
-      {
-        num: "01",
-        title: "Product Design",
-        desc: "Explorations in physical forms, modular seating concepts, joinery details, and tactile material expressions.",
-        link: "#product-design"
-      },
-      {
-        num: "02",
-        title: "Drawing & Visual Arts",
-        desc: "Hand-drawn sketches, illustration studies, form experiments, and visual storytelling.",
-        link: "#drawing"
-      },
-      {
-        num: "03",
-        title: "Graphic Design",
-        desc: "Poster collages, brand visual systems, editorial layouts, and digital interface dashboard UI.",
-        link: "#graphic-design"
+    // DOM Elements
+    const skyBg = document.getElementById('sky-background');
+    const sunMoon = document.getElementById('sun-moon');
+    const sunGlow = document.getElementById('sun-glow');
+    const timeDisplay = document.getElementById('time-display');
+    const lampLight = document.getElementById('lamp-light');
+    const bodyContainer = document.getElementById('body-container');
+
+    // 天空渐变颜色 keyframes (从日出 06:00 -> 正午 12:00 -> 夕阳 18:00 -> 夜晚 22:00)
+    function interpolateColor(color1, color2, factor) {
+      const result = color1.slice();
+      for (let i = 0; i < 3; i++) {
+        result[i] = Math.round(result[i] + factor * (color2[i] - result[i]));
       }
+      return `rgb(${result[0]}, ${result[1]}, ${result[2]})`;
+    }
+
+    // Keyframes定义 [R, G, B]
+    const skyPhases = [
+      // 0. Dawn (日出 06:00)
+      { top: [255, 179, 133], mid: [255, 209, 169], bottom: [255, 240, 229] },
+      // 1. Midday (正午 12:00)
+      { top: [120, 180, 240], mid: [180, 220, 255], bottom: [230, 245, 255] },
+      // 2. Sunset (夕阳 18:00)
+      { top: [180, 70, 100], mid: [240, 130, 90], bottom: [255, 200, 120] },
+      // 3. Night (夜幕 22:00)
+      { top: [12, 15, 28], mid: [22, 28, 48], bottom: [38, 42, 68] }
     ];
 
-    let currentFrame = 0;
-    const reelEl = document.getElementById('film-reel');
-    const titleEl = document.getElementById('category-title');
-    const descEl = document.getElementById('category-desc');
-    const frameNumEl = document.getElementById('frame-num');
-    const exploreBtn = document.getElementById('explore-btn');
-    const dots = document.querySelectorAll('.dot');
+    window.addEventListener('scroll', () => {
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollTop = window.scrollY;
+      // progress 从 0.0 过渡到 1.0
+      const progress = Math.min(Math.max(scrollTop / scrollHeight, 0), 1);
 
-    function updateFrame(index) {
-      currentFrame = index;
-      const rotationDegree = currentFrame * 120;
-      reelEl.style.transform = `rotate(${rotationDegree}deg)`;
+      // 计算处于哪个阶段
+      const totalPhases = skyPhases.length - 1;
+      const rawPhase = progress * totalPhases;
+      const phaseIndex = Math.floor(rawPhase);
+      const factor = rawPhase - phaseIndex;
 
-      const data = categories[currentFrame];
-      frameNumEl.textContent = data.num;
-      titleEl.textContent = data.title;
-      descEl.textContent = data.desc;
-      exploreBtn.setAttribute('href', data.link);
+      const p1 = skyPhases[phaseIndex];
+      const p2 = skyPhases[Math.min(phaseIndex + 1, totalPhases)];
 
-      dots.forEach((dot, i) => {
-        if (i === currentFrame) {
-          dot.classList.add('bg-amber-700');
-          dot.classList.remove('bg-stone-300');
-        } else {
-          dot.classList.remove('bg-amber-700');
-          dot.classList.add('bg-stone-300');
-        }
-      });
-    }
+      // 差值计算天空三种颜色
+      const topColor = interpolateColor(p1.top, p2.top, factor);
+      const midColor = interpolateColor(p1.mid, p2.mid, factor);
+      const bottomColor = interpolateColor(p1.bottom, p2.bottom, factor);
 
-    function setFrame(index) {
-      updateFrame(index);
-    }
+      // 更新天空背景
+      skyBg.style.background = `linear-gradient(180deg, ${topColor} 0%, ${midColor} 50%, ${bottomColor} 100%)`;
 
-    document.getElementById('next-btn').addEventListener('click', () => {
-      const nextIndex = (currentFrame + 1) % categories.length;
-      updateFrame(nextIndex);
-    });
+      // 太阳/月亮下沉与位置计算
+      const translateY = progress * 320; // 太阳往下落
+      sunMoon.style.transform = `translateY(${translateY}px)`;
 
-    document.getElementById('prev-btn').addEventListener('click', () => {
-      const prevIndex = (currentFrame - 1 + categories.length) % categories.length;
-      updateFrame(prevIndex);
+      // 时间文字更新与台灯点亮控制
+      if (progress < 0.25) {
+        timeDisplay.textContent = "07:00 AM (DAWN)";
+        sunGlow.style.backgroundColor = "rgba(254, 215, 170, 0.9)";
+        lampLight.style.backgroundColor = "rgba(253, 230, 138, 0)";
+        bodyContainer.classList.remove('dark-mode');
+      } else if (progress < 0.55) {
+        timeDisplay.textContent = "12:00 PM (MIDDAY)";
+        sunGlow.style.backgroundColor = "rgba(255, 255, 255, 1)";
+        lampLight.style.backgroundColor = "rgba(253, 230, 138, 0)";
+        bodyContainer.classList.remove('dark-mode');
+      } else if (progress < 0.8) {
+        timeDisplay.textContent = "06:30 PM (SUNSET)";
+        sunGlow.style.backgroundColor = "rgba(249, 115, 22, 0.9)";
+        lampLight.style.backgroundColor = "rgba(253, 230, 138, 0.2)";
+        bodyContainer.classList.remove('dark-mode');
+      } else {
+        timeDisplay.textContent = "10:00 PM (NIGHT)";
+        sunGlow.style.backgroundColor = "rgba(224, 231, 255, 0.7)"; // 变身为淡蓝色月光
+        lampLight.style.backgroundColor = "rgba(253, 230, 138, 0.6)"; // 自动点亮台灯！
+        bodyContainer.classList.add('dark-mode');
+      }
     });
   </script>
 </body>
