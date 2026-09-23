@@ -74,7 +74,51 @@
   </style>
 </head>
 <body id="body-container" class="relative">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Monolith Style Preloader</title>
+  <!-- 引入样式表 -->
+  <link rel="stylesheet" href="css/style.css">
+  <!-- 引入 Google 艺术字体 (Instrument Serif / Mono)，营造 Monolith 的高级感 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
 
+  <!-- ==================== 加载动画遮罩层 (Monolith Style) ==================== -->
+  <div id="loader" class="monolith-loader">
+    <!-- 顶部艺术角标文本 -->
+    <div class="loader-header">
+      <span>THE MONOLITH EXPERIENCE</span>
+      <span>CHAPTER I — DAWN</span>
+    </div>
+
+    <!-- 中央核心：巨大的百分比数字 -->
+    <div class="loader-center">
+      <div class="number-wrapper">
+        <span id="loader-counter">00</span>
+        <span class="percent-symbol">%</span>
+      </div>
+      <p class="loader-subtext">LOADING THREE.JS SCENE...</p>
+    </div>
+
+    <!-- 底部极细进度条 -->
+    <div class="loader-bottom">
+      <div class="progress-bar-bg">
+        <div id="progress-bar-fill" class="progress-bar-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D 渲染画布（背景世界） -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
   <!-- ==================== FIXED BACKGROUND (WINDOW VIEW) ==================== -->
   <div class="fixed inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
     
