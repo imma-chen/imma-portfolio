@@ -14,7 +14,7 @@ body {
   overflow: hidden; /* 加载时禁止页面乱滚 */
 }
 
-/* 1. 加载屏幕全屏固定遮罩 */
+/* ==================== 1. 加载屏幕全屏固定遮罩 ==================== */
 .monolith-loader {
   position: fixed;
   top: 0;
@@ -31,7 +31,7 @@ body {
   transition: transform 1.2s cubic-bezier(0.76, 0, 0.24, 1), opacity 1s ease;
 }
 
-/* 2. 顶部角标文本 */
+/* 顶部角标文本 */
 .loader-header {
   display: flex;
   justify-content: space-between;
@@ -41,38 +41,47 @@ body {
   text-transform: uppercase;
 }
 
-/* 3. 中央巨型数字 */
+/* 中央区域 */
 .loader-center {
   text-align: center;
 }
 
-.number-wrapper {
-  font-family: 'Instrument Serif', serif; /* 优雅的衬线字体 */
-  font-size: clamp(6rem, 15vw, 14rem);    /* 随着屏幕大小自动缩放巨型字体 */
+/* WELCOME 填充文字：底层是描边空心字，::after 叠加一层实心字，
+   通过 clip-path 按加载进度从左到右"显影"，配合 JS 更新 --progress */
+.welcome-text {
+  position: relative;
+  display: inline-block;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
-  line-height: 0.9;
-  color: #f3f3f5;
-  display: flex;
-  justify-content: center;
-  align-items: baseline;
+  font-size: clamp(3.2rem, 13vw, 9.5rem);
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.28);
+  --progress: 0; /* 由 JS 实时更新，取值 0-100 */
 }
 
-.percent-symbol {
-  font-size: 2rem;
-  font-family: 'JetBrains Mono', monospace;
-  font-style: normal;
-  color: #ffaa64; /* 暖橙色高亮 */
-  margin-left: 0.5rem;
+.welcome-text::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: #f7f3ec;
+  -webkit-text-stroke: 0;
+  background: linear-gradient(90deg, #ffd9a6, #f7f3ec 65%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  clip-path: inset(0 calc(100% - (var(--progress) * 1%)) 0 0);
+  transition: clip-path 0.08s linear;
 }
 
 .loader-subtext {
   font-size: 0.7rem;
   letter-spacing: 0.3em;
   color: #888890;
-  margin-top: 1rem;
+  margin-top: 1.25rem;
 }
 
-/* 4. 底部进度条 */
+/* 底部进度条 */
 .progress-bar-bg {
   width: 100%;
   height: 2px;
@@ -88,9 +97,80 @@ body {
   transition: width 0.1s linear;
 }
 
-/* 5. 核心动画：加载完成时的离场效果 (Monolith 破空镜头) */
+/* 核心动画：加载完成时的离场效果 (Monolith 破空镜头) */
 .monolith-loader.loaded {
   transform: scale(1.15); /* 向上稍微拉伸放大，产生向镜头扑来的感觉 */
   opacity: 0;
   pointer-events: none; /* 消失后不挡住鼠标 */
+}
+
+
+/* ==================== 2. 排版辅助类 ==================== */
+.serif-title {
+  font-family: 'Instrument Serif', serif;
+}
+
+
+/* ==================== 3. 随昼夜变化的文字颜色 ==================== */
+.text-adaptive-main {
+  color: #292524; /* stone-800，默认白天配色 */
+  transition: color 0.6s ease;
+}
+
+.text-adaptive-sub {
+  color: #57534e; /* stone-600 */
+  transition: color 0.6s ease;
+}
+
+#body-container.dark-mode .text-adaptive-main {
+  color: #f5f5f4;
+}
+
+#body-container.dark-mode .text-adaptive-sub {
+  color: #a8a29e;
+}
+
+
+/* ==================== 4. 玻璃拟态卡片 ==================== */
+.glass-card {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  transition: background 0.6s ease, border-color 0.6s ease,
+              transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+#body-container.dark-mode .glass-card {
+  background: rgba(18, 18, 22, 0.55);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.interactive-hover {
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.interactive-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.25);
+}
+
+
+/* ==================== 5. 天空与天体 ==================== */
+#sky-background {
+  transition: background 0.3s ease;
+}
+
+.celestial-body {
+  transition: transform 0.1s linear;
+}
+
+
+/* ==================== 6. 3D 桌面容器 ==================== */
+#desk-3d-container {
+  cursor: grab;
+}
+
+#desk-canvas {
+  display: block;
 }
