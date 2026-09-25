@@ -4,12 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portfolio | A Day at the Desk</title>
-  
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  
+  <!-- Three.js (r128 UMD build, for the interactive 3D desk scene) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
   <!-- Google Fonts: 引入 Monolith 风格衬线体与高质感字体 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,13 +30,10 @@
       <span>CHAPTER I — DAWN</span>
     </div>
 
-    <!-- 中央核心：巨型数字递增 -->
+    <!-- 中央核心：WELCOME 填充动画 -->
     <div class="loader-center">
-      <div class="number-wrapper">
-        <span id="loader-counter">00</span>
-        <span class="percent-symbol">%</span>
-      </div>
-      <p class="loader-subtext">LOADING THREE.JS SCENE...</p>
+      <h1 id="welcome-text" class="welcome-text" data-text="WELCOME">WELCOME</h1>
+      <p class="loader-subtext">ENTERING THE DESK...</p>
     </div>
 
     <!-- 底部极细进度条 -->
@@ -48,7 +47,7 @@
 
   <!-- ==================== 2. FIXED BACKGROUND (WINDOW VIEW) ==================== -->
   <div class="fixed inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
-    
+
     <!-- Sky Gradient Layer -->
     <div id="sky-background" class="absolute inset-0 w-full h-full"></div>
 
@@ -64,33 +63,18 @@
 
     <!-- Window Structure & Desk Foreground -->
     <div class="absolute inset-0 flex flex-col justify-between">
-      
+
       <!-- Top Window Frame & Header Navigation Overlay -->
       <div class="w-full h-12 bg-stone-900/90 border-b-4 border-stone-950 flex items-center justify-between px-8 text-stone-300 text-xs tracking-widest font-mono">
         <span>WINDOW VIEW — AT THE DESK</span>
         <span id="time-display">06:00 AM (DAWN)</span>
       </div>
 
-      <!-- Desk Surface at Bottom -->
-      <div class="w-full h-36 bg-gradient-to-b from-stone-900 via-stone-950 to-black border-t-8 border-stone-800 relative flex items-end justify-between px-12 pb-4 shadow-2xl">
-        
-        <!-- Desk Props Silhouette: Lamp & Coffee Mug -->
-        <div class="flex items-end gap-8">
-          <!-- Desk Lamp Silhouette with Light Glow -->
-          <div class="relative flex flex-col items-center">
-            <div id="lamp-light" class="absolute -top-16 -left-12 w-40 h-40 bg-amber-200/0 rounded-full blur-2xl transition-all duration-700 pointer-events-none"></div>
-            <div class="w-3 h-24 bg-stone-800 rounded-t-sm"></div>
-            <div class="w-12 h-6 bg-stone-800 rounded-t-full"></div>
-          </div>
-          <!-- Coffee Mug -->
-          <div class="w-8 h-10 bg-stone-800/90 rounded-b-md relative border-t-2 border-stone-700">
-            <div class="absolute -right-3 top-2 w-3 h-5 border-2 border-stone-800 rounded-r-md"></div>
-          </div>
-        </div>
-
-        <!-- Time Indicator Badge -->
-        <div class="text-stone-500 text-xs font-mono">
-          Scroll Down to Advance Time ↓
+      <!-- Desk Surface at Bottom: now an interactive 3D scene -->
+      <div id="desk-3d-container" class="w-full h-44 md:h-64 bg-gradient-to-b from-stone-900 via-stone-950 to-black border-t-8 border-stone-800 relative shadow-2xl pointer-events-auto">
+        <canvas id="desk-canvas" class="w-full h-full block"></canvas>
+        <div class="absolute bottom-3 right-6 text-stone-500 text-xs font-mono pointer-events-none">
+          Move your mouse to explore · Scroll to advance time ↓
         </div>
       </div>
     </div>
