@@ -1,1 +1,90 @@
+/* css/loader.css
+   入场加载动画：大字 WELCOME 随进度从左到右被填满颜色，
+   加载完成后整体放大并淡出，露出后面的书桌场景。
+*/
 
+.monolith-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--color-bg-deep);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3rem;
+  transition: transform 1.2s cubic-bezier(0.76, 0, 0.24, 1), opacity 1s ease;
+}
+
+.loader-header {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: rgba(245, 232, 207, 0.55);
+  text-transform: uppercase;
+}
+
+.loader-center {
+  text-align: center;
+}
+
+/* WELCOME 填充文字：底层描边空心字，::after 叠加实心字，
+   通过 clip-path 按 --progress（0-100，由 JS 更新）从左到右显影 */
+.welcome-text {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(3.2rem, 13vw, 9.5rem);
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(245, 232, 207, 0.3);
+  --progress: 0;
+}
+
+.welcome-text::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: var(--color-cream);
+  -webkit-text-stroke: 0;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-cream) 65%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  clip-path: inset(0 calc(100% - (var(--progress) * 1%)) 0 0);
+  transition: clip-path 0.08s linear;
+}
+
+.loader-subtext {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  color: rgba(245, 232, 207, 0.45);
+  margin-top: 1.25rem;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 2px;
+  background-color: rgba(245, 232, 207, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  width: 0%;
+  height: 100%;
+  background-color: var(--color-accent);
+  transition: width 0.1s linear;
+}
+
+.monolith-loader.loaded {
+  transform: scale(1.15);
+  opacity: 0;
+  pointer-events: none;
+}
