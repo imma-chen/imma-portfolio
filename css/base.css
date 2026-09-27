@@ -1,1 +1,58 @@
+/* css/base.css
+   全局重置 + 配色变量 + 字体设定
+   配色是从你参考图里取的：粉调墙面、暖木色桌面、雾蓝抽屉柜、
+   奶油色台灯与椅子、暮色天空的紫蓝到蜜桃色渐变。
+*/
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* ---- 主色板（取自参考插画）---- */
+  --color-blush: #f3d9d6;      /* 墙面粉 */
+  --color-wood: #e3c19c;       /* 桌面暖木色 */
+  --color-wood-dark: #b98a5c;  /* 深木色，边框/阴影用 */
+  --color-dust-blue: #a7c4d4;  /* 抽屉柜雾蓝 */
+  --color-cream: #f5e8cf;      /* 台灯/椅子奶油色 */
+  --color-sky-lavender: #9db3d6; /* 天空上部 */
+  --color-sky-peach: #f6c19a;    /* 天空近地平线 */
+  --color-sun-glow: #ffe3ad;     /* 落日光晕 */
+
+  /* ---- 功能色 ---- */
+  --color-ink: #4a3b3f;          /* 正文深色，暖棕紫，比纯黑更柔和 */
+  --color-ink-soft: #8a7377;     /* 次要文字 */
+  --color-bg-deep: #241a26;      /* 加载动画/面板背景的深紫棕 */
+  --color-accent: #f2b56b;       /* 高亮/热区光晕金色 */
+  --color-panel-bg: #fdf6ee;     /* 内容面板背景，暖白 */
+
+  /* ---- 字体 ---- */
+  --font-serif: 'Instrument Serif', serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden; /* 整个体验是单屏场景，不需要滚动 */
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  background: var(--color-bg-deep);
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
